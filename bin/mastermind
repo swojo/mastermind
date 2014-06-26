@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require 'mastermind'
+
+Mastermind::NewGame.new.play_game

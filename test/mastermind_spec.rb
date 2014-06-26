@@ -1,5 +1,5 @@
 require 'rspec'
-require_relative 'mastermind'
+require 'mastermind'
 
 include Mastermind
 
