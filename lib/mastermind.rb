@@ -1,7 +1,7 @@
 require 'mastermind/GameRules'
-require_relative 'mastermind/TerminalInterface'
-require_relative 'mastermind/GameStatus'
-require_relative 'mastermind/AIsolver'
+require 'mastermind/TerminalInterface'
+require 'mastermind/GameStatus'
+require 'mastermind/AIsolver'
 
 module Mastermind
   class NewGame

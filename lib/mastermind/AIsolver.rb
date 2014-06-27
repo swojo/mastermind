@@ -6,10 +6,13 @@ module Mastermind
       @valid_letters = valid_letters
       @possible_guesses = valid_letters.repeated_permutation(4).to_a
     end
-    
+   
+    def rand_index
+      rand(@possible_guesses.size)
+    end
+ 
     def next_guess
-      @possible_guesses[0]
-#      @possible_guesses[rand(@possible_guesses.size)]
+       @possible_guesses[rand(@possible_guesses.size)]
     end
 
     def discard_invalid_guesses(incorrect_guess)

@@ -1,5 +1,9 @@
 require 'rspec'
 require 'mastermind'
+require_relative '../lib/mastermind/AIsolver'
+require_relative '../lib/mastermind/GameRules'
+require_relative '../lib/mastermind/GameStatus'
+require_relative '../lib/mastermind/TerminalInterface'
 
 include Mastermind
 
@@ -37,7 +41,7 @@ describe 'Mastermind' do
       expect(board.process_guess(code).correct?).to eq(true)
     end
 
-    #is it ok that win? is not tested here?
+    #is it ok that 'win?' is not tested here?
   end
 
   describe 'CurrentResult' do
@@ -74,23 +78,33 @@ describe 'Mastermind' do
 
   describe 'NaiveAlgorithm' do
     let (:naive_algorithm){NaiveAlgorithm.new(default_colors)}
+    before(:all) do
+      result_hash = {correct_positions: 0, correct_colors: 0}
+      guess = %w{R R R R}
+      @incorrect_guess = CurrentResult.new(guess, nil, result_hash )
+    end 
 
     it 'initializes possible guesses to all permutations' do
       expect(naive_algorithm.possible_guesses.size).to eq(1296)
     end
 
-    it 'chooses the next available guess' do
-      expect(naive_algorithm.next_guess).to eq( %w{R R R R} )
+    it 'chooses a valid next_guess' do
+      expect(naive_algorithm.next_guess).to be
+    end
+
+    it 'randomizes the next guess' do
+      first_guess = naive_algorithm.next_guess
+      second_guess = naive_algorithm.next_guess
+      expect(first_guess).not_to eq(second_guess)
     end
 
     it 'discards invalid guesses based on previous result' do
-      result_hash = {correct_positions: 0, correct_colors: 0}
-      guess = %w{R R R R}
-      incorrect_guess = CurrentResult.new(guess, nil, result_hash )
-      expect(naive_algorithm.next_guess).to eq( %w{R R R R} )
-      naive_algorithm.discard_invalid_guesses(incorrect_guess)
-      expect(naive_algorithm.next_guess).to eq( %w{G G G G} )
+      expect(naive_algorithm.discard_invalid_guesses(@incorrect_guess)).not_to include( %w{R R R R} )
     end
+
+    it 'keeps guesses that are still valid' do
+      expect(naive_algorithm.discard_invalid_guesses(@incorrect_guess)).to include( %w{G G G G} )
+    end  
   end
 
   describe 'AIPlayer' do
@@ -99,6 +113,9 @@ describe 'Mastermind' do
     let(:solution){CurrentResult.new(code, 1, WIN_HASH )}
 
     it 'calls process_guess once if wins on first try' do
+      naive_obj = double('naive_obj')
+      allow(NaiveAlgorithm).to receive(:new){naive_obj}
+      allow(naive_obj).to receive(:next_guess){ code }    
       expect(board).to receive(:process_guess).with(code).and_return(solution)
       ai_player.solve
     end
