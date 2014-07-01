@@ -1,9 +1,9 @@
 require 'rspec'
 require 'mastermind'
-require_relative '../lib/mastermind/AIsolver'
-require_relative '../lib/mastermind/GameRules'
-require_relative '../lib/mastermind/GameStatus'
-require_relative '../lib/mastermind/TerminalInterface'
+require '../lib/mastermind/AIsolver'
+require '../lib/mastermind/GameRules'
+require '../lib/mastermind/GameStatus'
+require '../lib/mastermind/TerminalInterface'
 
 include Mastermind
 
@@ -40,8 +40,16 @@ describe 'Mastermind' do
     it 'returns a correct result when correct guess (win)' do
       expect(board.process_guess(code).correct?).to eq(true)
     end
+    
+    it 'detects the end of game on a win' do
+      result = CurrentResult.new(code, nil, nil)
+      expect(board.end_of_game?(result)).to eq(true)
+    end
 
-    #is it ok that 'win?' is not tested here?
+    it 'detects the end of game on a loss' do
+      result = CurrentResult.new(nil, 10, nil)
+      expect(board.end_of_game?(result)).to eq(true)
+    end
   end
 
   describe 'CurrentResult' do
@@ -223,25 +231,25 @@ describe 'Mastermind' do
 
   describe 'Validator' do
 
-    it 'accepts a 4 letter long code' do
-      validator= Validator.new(code)
-      expect(validator.correct_length?).to eq(true)
-    end
-    
-    it 'detects incorrect code length' do
-      validator = Validator.new( %w{R R R R R R} )
-      expect(validator.correct_length?).to eq(false)
-    end
-
-    it 'accepts code made up of valid letters' do
-      validator = Validator.new( %w{R R R R} )
-      expect(validator.valid_letters?).to eq(true)
-    end
-
-    it 'detects invalid letters' do
-      validator = Validator.new( %w{R Z R R} )
-      expect(validator.valid_letters?).to eq(false)  
-    end
+#    it 'accepts a 4 letter long code' do
+#      validator= Validator.new(code)
+#      expect(validator.correct_length?).to eq(true)
+#    end
+#    
+#    it 'detects incorrect code length' do
+#      validator = Validator.new( %w{R R R R R R} )
+#      expect(validator.correct_length?).to eq(false)
+#    end
+#
+#    it 'accepts code made up of valid letters' do
+#      validator = Validator.new( %w{R R R R} )
+#      expect(validator.valid_letters?).to eq(true)
+#    end
+#
+#    it 'detects invalid letters' do
+#      validator = Validator.new( %w{R Z R R} )
+#      expect(validator.valid_letters?).to eq(false)  
+#    end
 
     it 'fails if either letters or code length are incorrect' do
       wrong_length = Validator.new( %w{R R R R R R})

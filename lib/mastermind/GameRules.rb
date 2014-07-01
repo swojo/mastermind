@@ -38,18 +38,21 @@ module Mastermind
       @valid_letters = %w{R G O Y B P}
     end
    
+    
+    def valid?
+      correct_length? && valid_letters?
+    end  
+    
+    private
+	
     def correct_length?
       @code.size == @code_length
     end
 
     def valid_letters?
       @code.uniq.all? do |letter|
-        @valid_letters.include?letter
+      @valid_letters.include?letter
       end
     end
-    
-    def valid?
-      correct_length? && valid_letters?
-    end  
   end
 end

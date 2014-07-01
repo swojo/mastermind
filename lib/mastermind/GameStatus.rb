@@ -2,7 +2,6 @@ module Mastermind
   WIN_HASH = {correct_positions: 4, correct_colors:0}
 
   class GameStatus
-    attr_reader :code, :num_of_tries
     def initialize(code)
       @code = code
       @num_of_tries = 0
@@ -22,6 +21,11 @@ module Mastermind
       end
       CurrentResult.new(guess, num_of_tries, result_hash) 
     end
+
+    def end_of_game?(result)
+      win?(result.guess) || result.num_of_tries == 10
+    end
+
    
     private
  

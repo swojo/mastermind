@@ -7,10 +7,6 @@ module Mastermind
       @possible_guesses = valid_letters.repeated_permutation(4).to_a
     end
    
-    def rand_index
-      rand(@possible_guesses.size)
-    end
- 
     def next_guess
        @possible_guesses[rand(@possible_guesses.size)]
     end
@@ -34,7 +30,7 @@ module Mastermind
     def solve
       next_guess = @algorithm.next_guess
       result = @board.process_guess(next_guess)
-      return result if result.correct? || result.num_of_tries == 10
+      return result if @board.end_of_game?(result)
       
       @algorithm.discard_invalid_guesses(result)
       solve
