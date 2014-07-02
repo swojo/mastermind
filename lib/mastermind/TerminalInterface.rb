@@ -20,6 +20,8 @@ module Mastermind
         "You win!"
       when :lose
         "Haha! You lost!"
+      when :color_scheme
+        "Enter a 6 letter color scheme or press Enter to use default"  
       else 
         "Come again?"
      end

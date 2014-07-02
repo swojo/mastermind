@@ -1,11 +1,13 @@
 require 'rspec'
-require 'mastermind'
+require '../lib/mastermind'
 require '../lib/mastermind/AIsolver'
 require '../lib/mastermind/GameRules'
 require '../lib/mastermind/GameStatus'
 require '../lib/mastermind/TerminalInterface'
 
 include Mastermind
+
+DEFAULT_COLORS = %w{R G O Y B P}
 
 describe 'Mastermind' do
   WIN_HASH = {correct_positions: 4, correct_colors: 0}
@@ -16,17 +18,8 @@ describe 'Mastermind' do
   describe 'GameStatus' do
     let (:code){ %w{A B C D} }
     let (:incorrect_guess){ %w{A C B E} }
-    let (:board){GameStatus.new(code)}
+    let (:board){GameStatus.new(code, DEFAULT_COLORS)}
 
-    it 'keeps track of the number of guesses' do
-      expect(board.num_of_tries).to eq(0)
-      board.process_guess(incorrect_guess)
-      expect(board.num_of_tries).to eq(1)
-    end
-    
-    it 'stores the correct code' do
-      expect(board.code).to eq(code)
-    end
     it 'stores the valid letters' do
       expect(board.valid_letters).to eq(default_colors)
     end
@@ -70,19 +63,24 @@ describe 'Mastermind' do
     let (:code){ %w{A B C D} }
     let (:incorrect_guess){ %w{A C B E} }
     let (:code_comparer){CodeComparer.new(code,incorrect_guess)}
-#    it 'returns correct number of matching positions' do
-#      expect(code_comparer.correct_positions).to eq(1)
-#    end
-#    
-#    it 'returns correct number of total matching colors' do
-#      expect(code_comparer.total_correct_colors).to eq(3)
-#    end
 
     it 'returns a hash with number of positions/colors' do
       result_hash = {correct_positions: 1, correct_colors:2}
       expect(code_comparer.compare).to eq(result_hash)
     end
   end
+
+  describe 'Colors' do
+    let(:default_colors){%w{R G O Y B P}}
+    it 'returns default colors if incorrect size of input array' do
+      custom_colors = %w{Q Z F R}
+      expect(Colors.new(custom_colors).valid_colors).to match_array(default_colors)
+    end
+
+    it 'returns default colors if no arguments' do
+      expect(Colors.new.valid_colors).to match_array(default_colors)
+    end
+  end 
 
   describe 'NaiveAlgorithm' do
     let (:naive_algorithm){NaiveAlgorithm.new(default_colors)}
@@ -116,7 +114,7 @@ describe 'Mastermind' do
   end
 
   describe 'AIPlayer' do
-    let(:board){GameStatus.new(code)}
+    let(:board){GameStatus.new(code, DEFAULT_COLORS)}
     let(:ai_player){AIPlayer.new(board)}
     let(:solution){CurrentResult.new(code, 1, WIN_HASH )}
 
@@ -155,52 +153,58 @@ describe 'Mastermind' do
     it 'displays losing message' do
       expect(game_text.message(:lose)).to eq("Haha! You lost!")
     end
+
+    it 'prompts user for color scheme' do
+      expect(game_text.message(:color_scheme)).to eq("Enter a 6 letter color scheme or press Enter to use default")
+    end
   end
     
 
   describe 'NewGame' do 
     let(:new_game){ NewGame.new }
+    let(:terminal_obj){double('terminal_obj') }
 
-    it 'returns input when valid' do
-      terminal_obj = double('terminal_obj')
-      allow(Terminal).to receive(:new){terminal_obj}
-      expect(terminal_obj).to receive(:formatted_input).once.ordered.and_return(%w{R R R R} )
-      expect(terminal_obj).to receive(:display)
-
-      result = new_game.get_input
-      expect(Validator.new(result).valid?).to eq(true)
-    end
-
-    it 'calls the function until valid' do
-      terminal_obj = double('terminal_obj').as_null_object
-      allow(Terminal).to receive(:new){terminal_obj}
-      expect(terminal_obj).to receive(:formatted_input).once.ordered.and_return(%w{Z Z Z Z} )
-      expect(terminal_obj).to receive(:formatted_input).once.ordered.and_return(%w{R R R R} )
-      expect(terminal_obj).to receive(:display)
-
-      result = new_game.get_input
-      expect(Validator.new(result).valid?).to eq(true)
-    end 
-
-    it 'gets a Solution from winning AIPlayer' do 
-      new_game.set_up_board(%w{R R R R})
-      expect(new_game.run_ai_player.correct?).to eq(true)
-    end 
-    it 'prints winning end message if win' do
-      code = %w{R R R R}
-      result = CurrentResult.new(code, 1, WIN_HASH)
-      expect{new_game.end_of_game(result)}.to output("You win!\n").to_stdout
-    end
-
-    it 'prints losing end message if lose' do
-      result = CurrentResult.new(nil, nil, nil)
-      new_game.set_up_board(%w{R R R R})
-      expect{new_game.end_of_game(result)}.to output("Haha! You lost!\n").to_stdout
-    end
+#
+#    it 'returns input when valid' do
+#      allow(Terminal).to receive(:new){terminal_obj}
+#      expect(terminal_obj).to receive(:formatted_input).once.ordered.and_return(%w{R R R R} )
+#      expect(terminal_obj).to receive(:display)
+#
+#      result = new_game.get_input
+#      expect(Validator.new(result).valid?).to eq(true)
+#    end
+#
+#    it 'calls the function until valid' do
+#      allow(Terminal).to receive(:new){terminal_obj}
+#      expect(terminal_obj).to receive(:formatted_input).once.ordered.and_return(%w{Z Z Z Z} )
+#      expect(terminal_obj).to receive(:formatted_input).once.ordered.and_return(%w{R R R R} )
+#      expect(terminal_obj).to receive(:display)
+#      expect(terminal_obj).to receive(:display)
+#
+#      result = new_game.get_input
+#      expect(Validator.new(result).valid?).to eq(true)
+#    end 
+#
+#    it 'gets a Solution from winning AIPlayer' do 
+#      new_game.set_up_board(%w{R R R R})
+#      expect(new_game.run_ai_player.correct?).to eq(true)
+#    end 
+#    it 'prints winning end message if win' do
+#      code = %w{R R R R}
+#      result = CurrentResult.new(code, 1, WIN_HASH)
+#      expect{new_game.end_of_game(result)}.to output("You win!\n").to_stdout
+#    end
+#
+#    it 'prints losing end message if lose' do
+#      result = CurrentResult.new(nil, nil, nil)
+#      new_game.set_up_board(%w{R R R R})
+#      expect{new_game.end_of_game(result)}.to output("Haha! You lost!\n").to_stdout
+#    end
 
     it 'runs through the game' do
       expect_any_instance_of(GameText).to receive(:message).with(:welcome)
       expect(new_game).to receive(:get_input).and_return(%w{R O Y B} )
+      expect(new_game).to receive(:get_color_scheme).and_return(%w{ R G O Y B P})
       expect_any_instance_of(GameText).to receive(:message).with(:win)
       new_game.play_game
     end 
@@ -230,36 +234,21 @@ describe 'Mastermind' do
   end
 
   describe 'Validator' do
+    it 'accepts a correct code' do
+      correct_validator = Validator.new( %w{R G O Y}, 4, DEFAULT_COLORS)
+      expect(correct_validator.valid?).to eq(true)
+    end 
+  
+    it 'fails if code length is incorrect' do 
+      wrong_length = Validator.new( %w{R R R R R R}, 4, DEFAULT_COLORS)
+      expect(wrong_length.valid?).to eq(false)
+    end
 
-#    it 'accepts a 4 letter long code' do
-#      validator= Validator.new(code)
-#      expect(validator.correct_length?).to eq(true)
-#    end
-#    
-#    it 'detects incorrect code length' do
-#      validator = Validator.new( %w{R R R R R R} )
-#      expect(validator.correct_length?).to eq(false)
-#    end
-#
-#    it 'accepts code made up of valid letters' do
-#      validator = Validator.new( %w{R R R R} )
-#      expect(validator.valid_letters?).to eq(true)
-#    end
-#
-#    it 'detects invalid letters' do
-#      validator = Validator.new( %w{R Z R R} )
-#      expect(validator.valid_letters?).to eq(false)  
-#    end
+    
 
     it 'fails if either letters or code length are incorrect' do
-      wrong_length = Validator.new( %w{R R R R R R})
-      expect(wrong_length.valid?).to eq(false)
-
-      wrong_letters = Validator.new( %w{R X R R} )
+      wrong_letters = Validator.new( %w{R G O Y}, 4, %w{Q W E R T Y})
       expect(wrong_letters.valid?).to eq(false) 
-
-      correct_validator = Validator.new( %w{R G O Y} )
-      expect(correct_validator.valid?).to eq(true)
     end
   end
 end

@@ -1,4 +1,5 @@
 module Mastermind 
+  DEFAULT_COLORS = %w{R G O Y B P}
   class CodeComparer
     def initialize(code, guess)
       @code = code
@@ -32,10 +33,10 @@ module Mastermind
   end
 
   class Validator
-    def initialize(code)
+    def initialize(code, code_length, valid_letters)
       @code = code
-      @code_length = 4
-      @valid_letters = %w{R G O Y B P}
+      @code_length = code_length
+      @valid_letters = valid_letters
     end
    
     
@@ -53,6 +54,20 @@ module Mastermind
       @code.uniq.all? do |letter|
       @valid_letters.include?letter
       end
+    end
+  end
+
+  class Colors
+    def initialize(colors = [])
+      if(colors.empty? || colors.size != 6)
+        @colors = DEFAULT_COLORS
+      else 
+        @colors = colors
+      end 
+    end
+    
+    def valid_colors
+      @colors
     end
   end
 end

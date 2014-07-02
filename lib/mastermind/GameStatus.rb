@@ -2,13 +2,14 @@ module Mastermind
   WIN_HASH = {correct_positions: 4, correct_colors:0}
 
   class GameStatus
-    def initialize(code)
+    def initialize(code, colors)
       @code = code
       @num_of_tries = 0
+      @colors = colors
     end
     
     def valid_letters
-      %w{R G O Y B P}
+      @colors
     end
 
     def process_guess(guess)
@@ -19,7 +20,7 @@ module Mastermind
       else
         result_hash = CodeComparer.new(@code, guess).compare
       end
-      CurrentResult.new(guess, num_of_tries, result_hash) 
+      CurrentResult.new(guess, @num_of_tries, result_hash) 
     end
 
     def end_of_game?(result)
