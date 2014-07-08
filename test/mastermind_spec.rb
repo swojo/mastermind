@@ -1,9 +1,10 @@
 require 'rspec'
-require '../lib/mastermind'
-require '../lib/mastermind/AIsolver'
-require '../lib/mastermind/GameRules'
-require '../lib/mastermind/GameStatus'
-require '../lib/mastermind/TerminalInterface'
+require_relative '../lib/mastermind/GameLoop'
+require_relative '../lib/mastermind/AIsolver'
+require_relative '../lib/mastermind/GameRules'
+require_relative '../lib/mastermind/GameStatus'
+require_relative '../lib/mastermind/TerminalInterface'
+require_relative '../lib/mastermind/UserInterface'
 
 include Mastermind
 
@@ -114,14 +115,14 @@ describe 'Mastermind' do
   end
 
   describe 'AIPlayer' do
+    let(:algorithm){NaiveAlgorithm.new(DEFAULT_COLORS)}
     let(:board){GameStatus.new(code, DEFAULT_COLORS)}
-    let(:ai_player){AIPlayer.new(board)}
+    let(:ai_player){AIPlayer.new(board, algorithm)}
     let(:solution){CurrentResult.new(code, 1, WIN_HASH )}
+    
 
     it 'calls process_guess once if wins on first try' do
-      naive_obj = double('naive_obj')
-      allow(NaiveAlgorithm).to receive(:new){naive_obj}
-      allow(naive_obj).to receive(:next_guess){ code }    
+      allow(algorithm).to receive(:next_guess){ code }    
       expect(board).to receive(:process_guess).with(code).and_return(solution)
       ai_player.solve
     end
@@ -160,9 +161,10 @@ describe 'Mastermind' do
   end
     
 
-  describe 'NewGame' do 
-    let(:new_game){ NewGame.new }
+  describe 'Game' do 
+    let(:game_text){GameText.new}
     let(:terminal_obj){double('terminal_obj') }
+    let(:game){ Game.new(game_text, terminal_obj) }
 
 #
 #    it 'returns input when valid' do
@@ -170,7 +172,7 @@ describe 'Mastermind' do
 #      expect(terminal_obj).to receive(:formatted_input).once.ordered.and_return(%w{R R R R} )
 #      expect(terminal_obj).to receive(:display)
 #
-#      result = new_game.get_input
+#      result = game.get_input
 #      expect(Validator.new(result).valid?).to eq(true)
 #    end
 #
@@ -181,32 +183,33 @@ describe 'Mastermind' do
 #      expect(terminal_obj).to receive(:display)
 #      expect(terminal_obj).to receive(:display)
 #
-#      result = new_game.get_input
+#      result = game.get_input
 #      expect(Validator.new(result).valid?).to eq(true)
 #    end 
 #
 #    it 'gets a Solution from winning AIPlayer' do 
-#      new_game.set_up_board(%w{R R R R})
-#      expect(new_game.run_ai_player.correct?).to eq(true)
+#      game.set_up_board(%w{R R R R})
+#      expect(game.run_ai_player.correct?).to eq(true)
 #    end 
 #    it 'prints winning end message if win' do
 #      code = %w{R R R R}
 #      result = CurrentResult.new(code, 1, WIN_HASH)
-#      expect{new_game.end_of_game(result)}.to output("You win!\n").to_stdout
+#      expect{game.end_of_game(result)}.to output("You win!\n").to_stdout
 #    end
 #
 #    it 'prints losing end message if lose' do
 #      result = CurrentResult.new(nil, nil, nil)
-#      new_game.set_up_board(%w{R R R R})
-#      expect{new_game.end_of_game(result)}.to output("Haha! You lost!\n").to_stdout
+#      game.set_up_board(%w{R R R R})
+#      expect{game.end_of_game(result)}.to output("Haha! You lost!\n").to_stdout
 #    end
 
     it 'runs through the game' do
+      allow(terminal_obj).to receive(:display){}
       expect_any_instance_of(GameText).to receive(:message).with(:welcome)
-      expect(new_game).to receive(:get_input).and_return(%w{R O Y B} )
-      expect(new_game).to receive(:get_color_scheme).and_return(%w{ R G O Y B P})
+      expect(game).to receive(:get_input).and_return(%w{R O Y B} )
+      expect(game).to receive(:get_color_scheme).and_return(%w{ R G O Y B P})
       expect_any_instance_of(GameText).to receive(:message).with(:win)
-      new_game.play_game
+      game.play_game
     end 
   end
 
@@ -230,6 +233,24 @@ describe 'Mastermind' do
     it 'ignores whitespace' do
       whitespace_input = StringIO.new("a  b c  d\n")
       expect(terminal.formatted_input(whitespace_input)).to eq(%w{A B C D})
+    end 
+  end
+
+  describe 'CodeGenerator' do
+    let(:code_generator){CodeGenerator.new(DEFAULT_COLORS, 4)}
+    let(:terminal_obj){double('terminal_obj') }
+    
+    it 'calls the function until valid' do
+      allow(code_generator).to receive(:get_input){%w{R R R R}}
+      result = code_generator.get_valid_code 
+      expect(Validator.new(result, 4, DEFAULT_COLORS).valid?).to eq(true)
+    end
+
+    it 'gets the next input' do
+      allow(Terminal).to receive(:new){terminal_obj}
+      expect(terminal_obj).to receive(:display)
+      expect(terminal_obj).to receive(:formatted_input).once.ordered.and_return(%w{R R R R} )
+      expect(code_generator.get_input).to eq(%w{R R R R})
     end 
   end
 
