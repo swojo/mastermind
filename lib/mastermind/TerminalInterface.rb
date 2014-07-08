@@ -27,4 +27,5 @@ module Mastermind
      end
    end
  end
+
 end 

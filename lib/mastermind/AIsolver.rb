@@ -21,10 +21,9 @@ module Mastermind
   end
 
   class AIPlayer
-    def initialize(board)
+    def initialize(board, algorithm)
       @board = board
-      @valid_letters = @board.valid_letters
-      @algorithm = NaiveAlgorithm.new(@valid_letters)
+      @algorithm = algorithm
     end
    
     def solve
