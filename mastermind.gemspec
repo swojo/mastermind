@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'mastermind'
-  s.version = '0.0.3'
+  s.version = '0.0.6'
 	s.executables << 'mastermind'	
   s.date = '2014-06-25'
   s.summary = 'mastermind'

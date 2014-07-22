@@ -29,10 +29,8 @@ module Mastermind
     def solve
       next_guess = @algorithm.next_guess
       result = @board.process_guess(next_guess)
-      return result if @board.end_of_game?(result)
-      
       @algorithm.discard_invalid_guesses(result)
-      solve
+      result
     end
   end
 end

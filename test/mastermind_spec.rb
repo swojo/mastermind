@@ -1,10 +1,9 @@
 require 'rspec'
-require_relative '../lib/mastermind/GameLoop'
+require_relative '../lib/mastermind'
 require_relative '../lib/mastermind/AIsolver'
 require_relative '../lib/mastermind/GameRules'
 require_relative '../lib/mastermind/GameStatus'
 require_relative '../lib/mastermind/TerminalInterface'
-require_relative '../lib/mastermind/UserInterface'
 
 include Mastermind
 
@@ -126,14 +125,6 @@ describe 'Mastermind' do
       expect(board).to receive(:process_guess).with(code).and_return(solution)
       ai_player.solve
     end
-    
-    it 'returns the correct code when wins' do
-      expect(ai_player.solve.guess).to eq(code)
-    end
-
-    it 'calls process_guess at most 10 times' do
-      expect(board).to receive(:process_guess).at_most(10).times
-    end
   end   
 
   describe 'GameText' do
@@ -148,11 +139,19 @@ describe 'Mastermind' do
     end
 
     it 'displays winning message' do
-      expect(game_text.message(:win)).to eq("You win!")
+      code = %w{R R R R}
+      result = CurrentResult.new(code, 1, WIN_HASH)
+      expect(game_text.message(:win, result)).to eq("Solved in 1 try!")
     end
-    
+   
+    it 'pluralizes winning message' do
+      code = %w{R R R R}
+      result = CurrentResult.new(code, 2, WIN_HASH)
+      expect(game_text.message(:win, result)).to eq("Solved in 2 tries!")
+    end
+  
     it 'displays losing message' do
-      expect(game_text.message(:lose)).to eq("Haha! You lost!")
+      expect(game_text.message(:lose)).to eq("Game over. Unable to solve in 10 turns.")
     end
 
     it 'prompts user for color scheme' do
@@ -205,10 +204,9 @@ describe 'Mastermind' do
 
     it 'runs through the game' do
       allow(terminal_obj).to receive(:display){}
-      expect_any_instance_of(GameText).to receive(:message).with(:welcome)
+      allow(game_text).to receive(:message)
       expect(game).to receive(:get_input).and_return(%w{R O Y B} )
       expect(game).to receive(:get_color_scheme).and_return(%w{ R G O Y B P})
-      expect_any_instance_of(GameText).to receive(:message).with(:win)
       game.play_game
     end 
   end
@@ -236,23 +234,6 @@ describe 'Mastermind' do
     end 
   end
 
-  describe 'CodeGenerator' do
-    let(:code_generator){CodeGenerator.new(DEFAULT_COLORS, 4)}
-    let(:terminal_obj){double('terminal_obj') }
-    
-    it 'calls the function until valid' do
-      allow(code_generator).to receive(:get_input){%w{R R R R}}
-      result = code_generator.get_valid_code 
-      expect(Validator.new(result, 4, DEFAULT_COLORS).valid?).to eq(true)
-    end
-
-    it 'gets the next input' do
-      allow(Terminal).to receive(:new){terminal_obj}
-      expect(terminal_obj).to receive(:display)
-      expect(terminal_obj).to receive(:formatted_input).once.ordered.and_return(%w{R R R R} )
-      expect(code_generator.get_input).to eq(%w{R R R R})
-    end 
-  end
 
   describe 'Validator' do
     it 'accepts a correct code' do

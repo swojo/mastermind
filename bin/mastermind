@@ -1,5 +1,9 @@
 #!/usr/bin/env ruby
 
-require 'mastermind'
+require '../lib/mastermind'
 
-Mastermind::NewGame.new.play_game
+
+game_text = Mastermind::GameText.new
+terminal = Mastermind::Terminal.new
+
+Mastermind::Game.new(game_text, terminal).play_game
