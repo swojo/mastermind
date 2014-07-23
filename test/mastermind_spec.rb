@@ -1,9 +1,9 @@
 require 'rspec'
-require_relative '../lib/mastermind'
-require_relative '../lib/mastermind/AIsolver'
-require_relative '../lib/mastermind/GameRules'
-require_relative '../lib/mastermind/GameStatus'
-require_relative '../lib/mastermind/TerminalInterface'
+require_relative '../lib/mastermind_cmdline'
+require_relative '../lib/mastermind_cmdline/AIsolver'
+require_relative '../lib/mastermind_cmdline/GameRules'
+require_relative '../lib/mastermind_cmdline/GameStatus'
+require_relative '../lib/mastermind_cmdline/TerminalInterface'
 
 include Mastermind
 

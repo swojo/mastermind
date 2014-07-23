@@ -1,8 +1,7 @@
-require_relative 'GameRules'
-require_relative 'TerminalInterface'
-require_relative 'GameStatus'
-require_relative 'AIsolver'
-require_relative 'UserInterface'
+require_relative './mastermind_cmdline/GameRules'
+require_relative './mastermind_cmdline/TerminalInterface'
+require_relative './mastermind_cmdline/GameStatus'
+require_relative './mastermind_cmdline/AIsolver'
 
 module Mastermind
   class Game
@@ -30,7 +29,13 @@ module Mastermind
     end
    
     def get_input(colors)
-      CodeGenerator.new(colors, @code_length).get_valid_code
+      @terminal.display(@game_text.message(:prompt) )
+      input = @terminal.formatted_input
+      unless Validator.new(input, @code_length, colors ).valid? 
+        get_input
+      else
+        input
+      end
     end
  
     def set_up_board(code, colors)
@@ -39,19 +44,27 @@ module Mastermind
 
     def run_ai_player(colors)
       algorithm = NaiveAlgorithm.new(colors)
-      AIPlayer.new(@board, algorithm).solve
+      player = AIPlayer.new(@board, algorithm)
+      result = player.solve
+      until @board.end_of_game?(result)
+        result = player.solve
+        print_guess(result)
+      end
+      print_guess(result)
+      result
+    end
+
+    def print_guess(result)
+      @terminal.display(@game_text.message(:guess, result))
     end
 
     def end_of_game(result)
       if(result.correct?)
-        @terminal.display(@game_text.message(:win))
+        @terminal.display(@game_text.message(:win, result))
       else
-        @terminal.display(@game_text.message(:lose))
+        @terminal.display(@game_text.message(:lose, result))
       end
     end
   end 
 end
 
-if __FILE__ == $0
-  Mastermind::Game.new.play_game   
-end

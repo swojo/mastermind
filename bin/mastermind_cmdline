@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require '../lib/mastermind'
+require '../lib/mastermind_cmdline'
 
 
 game_text = Mastermind::GameText.new
