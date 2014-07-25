@@ -32,7 +32,7 @@ module Mastermind
       @terminal.display(@game_text.message(:prompt) )
       input = @terminal.formatted_input
       unless Validator.new(input, @code_length, colors ).valid? 
-        get_input
+        get_input(colors)
       else
         input
       end
@@ -46,11 +46,11 @@ module Mastermind
       algorithm = NaiveAlgorithm.new(colors)
       player = AIPlayer.new(@board, algorithm)
       result = player.solve
+      print_guess(result)
       until @board.end_of_game?(result)
         result = player.solve
         print_guess(result)
       end
-      print_guess(result)
       result
     end
 
